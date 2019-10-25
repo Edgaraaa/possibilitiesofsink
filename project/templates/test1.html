@@ -1,0 +1,88 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>test1</title>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js">
+</script>
+<script>
+    $(document).ready(function(){
+    $("button").click(function(){
+        $.ajax({
+        url:"{% static 'json/arg.json' %}",
+        dataType: "json", //返回数据格式为json
+        success:function(result){
+            console.log(result)
+            for(var key in result){
+                //onsole.log(result[i])
+                for(var key2 in result[key]){
+                    if(key2.search("sink")){
+                        for(var key3 in result[key][key2]){
+                            if(key3.search("x")){
+                                var nodex=JSON.stringify(result[key][key2][key3]["x"]);
+                                var nodey=JSON.stringify(result[key][key2][key3]["y"]);
+                                var drawing = document.getElementById("drawing");
+                                //确定浏览器支持<canvas>元素
+                                var context = drawing.getContext("2d"); //取得2D上下文对象
+                                //绘制红色矩形
+                                context.fillStyle = "black";
+                                context.fillRect(nodex, nodey, 5, 5);
+                            }
+                            else{
+                                /*var sinkx=JSON.stringify(result[key][key2][key3]["x"]);
+                                var sinky=JSON.stringify(result[key][key2][key3]["y"]);
+                                alert(sinkx);
+                                alert(sinky);
+                                var drawing = document.getElementById("drawing");
+                                //确定浏览器支持<canvas>元素
+                                if(drawing.getContext){
+                                    var context = drawing.getContext("2d"); //取得2D上下文对象
+                                    //绘制红色矩形
+                                    context.fillStyle = "red";
+                                    context.fillRect(sinkx, sinky, 10, 10);
+                                    //绘制半透明的蓝色描边矩形
+                                    }*/
+                                alert(JSON.stringify(result[key][key2][key3]));
+                            }
+                        }
+                    }else{
+                        var sinkx=JSON.stringify(result[key][key2]["x"]);
+                        var sinky=JSON.stringify(result[key][key2]["y"]);
+                        var sinkR=JSON.stringify(result[key][key2]["R"]);
+                        var drawing = document.getElementById("drawing");
+                        var context = drawing.getContext("2d"); //取得2D上下文对象
+                        //绘制红色矩形
+                        context.fillStyle = "red";
+                        context.fillRect(sinkx, sinky, 5, 5);
+                        var ctx = drawing.getContext("2d");
+                        var o=Number(sinkx)+Number(sinkR);
+                        ctx.moveTo(o,sinky);
+                        ctx.arc(sinkx,sinky,sinkR,0,2*Math.PI);
+                        ctx.stroke();
+                        //绘制半透明的蓝色描边矩形
+                        
+                    }
+                }
+            }
+            var strs=JSON.stringify(result)
+            $("#div1").text(strs);
+        }});
+    });
+});
+</script>
+</head>
+<body>
+    <form action="/create" method="GET">
+        sinknum:<input type="text" name="sinknum"><br />
+        sinkR:<input type="text" name="R"><br />
+        begin<input type="text" name="sinkbegin"><br />
+        end<input type="text" name="sinkend"><br />
+        nodenum:<input type="text" name="nodenum"><br />
+        <input type="submit" value="搜索"><br />
+    </form>
+    <button>hhh</button>
+    <div id="div1"></div>
+    <canvas id = "drawing" width = "1000px" height = "1000px">A drwaing of something.</canvas>
+</body>
+</html>
