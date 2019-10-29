@@ -7,6 +7,8 @@ import json
 import hashlib
 # Create your views here.
 
+nodeGroup={}
+nodeNum=0
 def create_sink(sinkname,R,begin,end):
     sink={}
     x=random.randint(begin,end)
@@ -156,7 +158,7 @@ def create_sink_node_by_people(request):
     json.dump(message,f)
     return HttpResponse("hh")
 
-def create_node(nodename,beginx,beginy,width):
+def create_node(nodename,beginx,beginy,width,sinkname):
     node={}
     x=random.randint(beginx,beginx+width)
     y=random.randint(beginy,beginy+width)
@@ -170,11 +172,28 @@ def create_node(nodename,beginx,beginy,width):
     hash.update(bytes(nodename,encoding='utf-8'))
     crp=hash.hexdigest()
     node.update({"crp":crp})
+    node.update({"nodename":nodename})
+    nodeGroup.update({"node"+str(nodeNum):node})
     return node
 
-def create_sinks(sinkname,beginx,beginy,width):
+def create_sinks(sinkname,beginx,beginy,R,width,nodenum):
     sink={}
     x=random.randint(beginx,beginx+width)
     y=random.randint(beginy,beginy+width)
-    
+    sinkstruct={
+        "x":x,
+        "y":y,
+        "R":R,
+    }
+    crp=[]
+    sink.update({"sinkstruct":sinkstruct})
+    nodegroup={}
+    for i in range(nodenum):
+        node=create_node("node"+str(i),beginx,beginy,width,sinkname)
+        crp.append(node["crp"])
+        nodegroup.update({"node"+str(i):node})
+    sink.update({"nodegroup":nodegroup})
+    sink.update({"crp":crp})
+    return sink
+
 
