@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response
 import random
 import math
 import json
+import hashlib
 # Create your views here.
 
 def create_sink(sinkname,R,begin,end):
@@ -154,3 +155,26 @@ def create_sink_node_by_people(request):
     f=open("/home/edgar/Desktop/project/static/json/arg2.json",'w')
     json.dump(message,f)
     return HttpResponse("hh")
+
+def create_node(nodename,beginx,beginy,width):
+    node={}
+    x=random.randint(beginx,beginx+width)
+    y=random.randint(beginy,beginy+width)
+    node.update({"nodename":nodename})
+    nodestruct={
+        "x":x,
+        "y":y,
+    }
+    node.update({"nodestruct":nodestruct})
+    hash=hashlib.md5()
+    hash.update(bytes(nodename,encoding='utf-8'))
+    crp=hash.hexdigest()
+    node.update({"crp":crp})
+    return node
+
+def create_sinks(sinkname,beginx,beginy,width):
+    sink={}
+    x=random.randint(beginx,beginx+width)
+    y=random.randint(beginy,beginy+width)
+    
+
