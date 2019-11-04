@@ -1,183 +1,43 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
+from django.views.decorators import csrf
 import random
 import math
 import json
+import string
 import hashlib
 # Create your views here.
 
 nodeGroup={}
+sinkGroup={}
 nodeNum=0
-def create_sink(sinkname,R,begin,end):
-    sink={}
-    x=random.randint(begin,end)
-    y=random.randint(begin,end)
-    point={
-        'R':R,
-        'x':x,
-        'y':y,
-    }
-    sink.update({sinkname:point})
-    return sink
-
-def random_create_node(num,begin,end,clustername,sinkx,sinky,sinkR):
-    nodegroup={}
-    for i in range(num):
-        flag=0
-        node={}
-        x=random.randint(begin,end)
-        y=random.randint(begin,end)
-        distance=math.sqrt((sinkx-x)**2+(sinky-y)**2)
-        if(sinkR>=distance):
-            flag=1
-        point={
-            'clustername':clustername,
-            'x':x,
-            'y':y,
-            'distance':distance,
-            'flag':flag
-        }
-        nodegroup.update({'node'+str(i):point})
-    return nodegroup
-
-def random_create_sinks(sinknum,R,sinkbegin,sinkend,nodenum,nodebegin,nodeend):
-    sinkgroup={}
-    for i in range(sinknum):
-        sink=create_sink('sink'+str(i),R,sinkbegin,sinkend)
-        nodegroup=random_create_node(nodenum,nodebegin,nodeend,'sink'+str(i),sink['sink'+str(i)]['x'],sink['sink'+str(i)]['y'],R)
-        sink.update({'nodegroup':nodegroup})
-        sinkgroup.update({'cluster'+str(i):sink})
-    return sinkgroup
-
-def create_form(request):
-    return render_to_response('test1.html')
-
-def create_sink_node_group_random(request):
-    request.encoding='utf-8'
-    if 'sinknum' in request.GET and 'R' in request.GET and 'sinkbegin' in request.GET and 'sinkend' in request.GET and 'nodenum' in request.GET:
-        message = random_create_sinks(int(request.GET['sinknum']),int(request.GET['R']),int(request.GET['sinkbegin']),int(request.GET['sinkend']),int(request.GET['nodenum']),int(request.GET['sinkbegin']),int(request.GET['sinkend']))
-    else:
-        message = '你提交了空表单'
-    print(type(message))
-    for i in message:
-        print(message[i])
-        innum=0
-        for j in message[i]:
-            if "nodegroup" in j:
-                print(message[i][j])
-                for k in message[i][j]:
-                    if message[i][j][k]["flag"] == 1:
-                        innum+=1
-        message[i].update({"in":innum})
-        p=float(innum/float(request.GET['nodenum'])*1.0)
-        message[i].update({"p":p})
-    f=open("/home/edgar/Desktop/project/static/json/arg.json",'w')
-    json.dump(message,f)
-    return HttpResponse("hh")
-
-def create_form2(request):
-    return render_to_response('test2.html')
-
-def create_sink_by_people(sinkname,R,beginx,beginy,width):
-    sink={}
-    x=random.randint(beginx,beginx+width)
-    y=random.randint(beginy,beginy+width)
-    point={
-        'R':R,
-        'x':x,
-        'y':y,
-    }
-    sink.update({sinkname:point})
-    return sink
-
-def create_node_by_people(num,beginx,beginy,width,clustername,sinkx,sinky,sinkR):
-    nodegroup={}
-    for i in range(num):
-        flag=0
-        node={}
-        x=random.randint(beginx,beginx+width)
-        y=random.randint(beginy,beginy+width)
-        distance=math.sqrt((sinkx-x)**2+(sinky-y)**2)
-        if(sinkR>=distance):
-            flag=1
-        point={
-            'clustername':clustername,
-            'x':x,
-            'y':y,
-            'distance':distance,
-            'flag':flag
-        }
-        nodegroup.update({'node'+str(i):point})
-    return nodegroup   
-
-
-def random_create_sinks_by_people(sinknum,R,nodenum,n):
-    sinkseach=int(sinknum/(n*n))
-    sinkleft=sinknum%(n*n)
-    sinkgroup={}
-    numofsink=0
-    width=int(1000/n)
-    for i in range(n):
-        for j in range(n):
-            for k in range(sinkseach):
-                sink=create_sink_by_people('sink'+str(numofsink),R,i*width,j*width,width)
-                nodegroup=create_node_by_people(nodenum,i*width,j*width,width,'sink'+str(numofsink),sink['sink'+str(numofsink)]['x'],sink['sink'+str(numofsink)]['y'],R)
-                sink.update({'nodegroup':nodegroup})
-                sinkgroup.update({'cluster'+str(numofsink):sink})
-                numofsink+=1
-    for i in range(sinkleft):
-        m=random.randint(0,n)
-        n=random.randint(0,n)
-        sink=create_sink_by_people('sink'+str(numofsink),R,m*width,n*width,width)
-        nodegroup=create_node_by_people(nodenum,m*width,n*width,width,'sink'+str(numofsink),sink['sink'+str(numofsink)]['x'],sink['sink'+str(numofsink)]['y'],R)
-        sink.update({'nodegroup':nodegroup})
-        sinkgroup.update({'cluster'+str(numofsink):sink})
-        numofsink+=1
-    return sinkgroup
-
-def create_sink_node_by_people(request):
-    request.encoding='utf-8'
-    if 'sinknum' in request.GET and 'R' in request.GET and 'nodenum' in request.GET and 'n' in request.GET:
-        message=random_create_sinks_by_people(int(request.GET['sinknum']),int(request.GET['R']),int(request.GET['nodenum']),int(request.GET['n']))
-    else:
-        message='no things!'
-    for i in message:
-        print(message[i])
-        innum=0
-        for j in message[i]:
-            if "nodegroup" in j:
-                print(message[i][j])
-                for k in message[i][j]:
-                    if message[i][j][k]["flag"] == 1:
-                        innum+=1
-        message[i].update({"in":innum})
-        p=float(innum/float(request.GET['nodenum'])*1.0)
-        message[i].update({"p":p})
-    f=open("/home/edgar/Desktop/project/static/json/arg2.json",'w')
-    json.dump(message,f)
-    return HttpResponse("hh")
-
+sinkNum=0
 def create_node(nodename,beginx,beginy,width,sinkname):
     node={}
+    global nodeNum
     x=random.randint(beginx,beginx+width)
     y=random.randint(beginy,beginy+width)
     node.update({"nodename":nodename})
+    node.update({"cluster":sinkname})
     nodestruct={
         "x":x,
         "y":y,
     }
     node.update({"nodestruct":nodestruct})
+    ran_str = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     hash=hashlib.md5()
-    hash.update(bytes(nodename,encoding='utf-8'))
+    hash.update(bytes(ran_str,encoding='utf-8'))
     crp=hash.hexdigest()
     node.update({"crp":crp})
     node.update({"nodename":nodename})
     nodeGroup.update({"node"+str(nodeNum):node})
+    nodeNum=nodeNum+1
     return node
 
 def create_sinks(sinkname,beginx,beginy,R,width,nodenum):
     sink={}
+    global sinkNum
     x=random.randint(beginx,beginx+width)
     y=random.randint(beginy,beginy+width)
     sinkstruct={
@@ -194,6 +54,129 @@ def create_sinks(sinkname,beginx,beginy,R,width,nodenum):
         nodegroup.update({"node"+str(i):node})
     sink.update({"nodegroup":nodegroup})
     sink.update({"crp":crp})
-    return sink
+    sinkGroup.update({"sink"+str(sinkNum):sink})
+    sinkNum=sinkNum+1
 
+def reset():
+    global nodeGroup
+    global sinkGroup
+    global nodeNum
+    global sinkNum
+    nodeGroup={}
+    sinkGroup={}
+    nodeNum=0
+    sinkNum=0
+
+def getdistance(ax,ay,bx,by):
+    return math.sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by))
+
+def findTheShortdistance():
+    global nodeGroup
+    global sinkGroup
+    mindistance=0xffffff
+    minsink=""
+    for i in nodeGroup:
+        #print(nodeGroup[i])
+        for j in sinkGroup:
+            #print(j)
+            a=getdistance(nodeGroup[i]['nodestruct']['x'],nodeGroup[i]['nodestruct']['y'],sinkGroup[j]['sinkstruct']['x'],sinkGroup[j]['sinkstruct']['y'])
+            #print(a)
+            if a<mindistance :
+                mindistance=a
+                minsink=j
+        nodeGroup[i].update({"mindistance":mindistance})
+        nodeGroup[i].update({"minsink":minsink})
+        mindistance=0xffffff
+        minsink=""
+
+
+def random_create_sinks(sinknum,beginx,beginy,width,R,nodenum):
+    reset()
+    for i in range(sinknum):
+        create_sinks("sink"+str(i),beginx,beginy,R,width,nodenum)
+    
+def getconnect(R):
+    global nodeGroup
+    global sinkGroup
+    a=0
+    for i in sinkGroup:
+        for j in nodeGroup:
+            if nodeGroup[j]['minsink']==i:
+                if nodeGroup[j]['mindistance']<=R:
+                    if nodeGroup[j]['crp'] in sinkGroup[i]['crp']:
+                        print("NB")
+                        print(j+'->'+i)
+                        a+=1
+    return a
+
+def getareas(R):
+    global nodeGroup
+    global sinkGroup
+    a=0
+    for i in nodeGroup:
+        print(nodeGroup[i])
+        if int(nodeGroup[i]['mindistance'])<=R:
+            print(nodeGroup[i]["mindistance"])
+            print(R)
+            a+=1
+    return a
+
+
+def index1(request):
+    return render_to_response("func1.html")
+
+def random_create_sinks_nodes(request):
+    ctx={}
+    if request.POST['sinknum']!="" and request.POST['beginx']!="" and request.POST['beginy']!="" and request.POST['width']!="" and request.POST['R']!="" and request.POST['nodenum']!="":
+        random_create_sinks(int(request.POST['sinknum']) , int(request.POST['beginx']) , int(request.POST['beginy']) , int(request.POST['width']) , int(request.POST['R']) , int(request.POST['nodenum']))
+        f=open("static/json/arg.json","w")
+        json.dump(sinkGroup,f)
+    else:
+        ctx['rlt']="no"
+        return render(request,"func1.html",ctx)
+    findTheShortdistance()
+    p=getconnect(int(request.POST['R']))/getareas(int(request.POST['R']))
+    print(p)
+    ctx['rlt']="p="+str(p)
+    return render(request,"func1.html",ctx)
+
+def index2(request):
+    return render_to_response("func2.html")
+def people_create_sinks(sinknum,n,R,nodenum):
+    reset()
+    sinknn=0
+    areas=n*n
+    sink1=int(sinknum/areas)
+    sink2=sinknum%areas
+    width=int(1000/n)
+    for i in range(n):
+        for j in range(n):
+            for k in range(sink1):
+                create_sinks("sink"+str(sinknn),i*width,j*width,R,width,nodenum)
+                sinknn+=1
+    for i in range(sink2):
+        x=random.randint(0,n)
+        y=random.randint(0,n)
+        create_sinks("sink"+str(sinknn),x*width,y*width,R,width,nodenum)
+        sinknn+=1
+    
+
+def people_create_sinks_nodes(request):
+    ctx={}
+    if request.POST['sinknum']!="" and request.POST['n']!="" and request.POST['R']!="" and request.POST['nodenum']!="":
+        n=int(request.POST['n'])
+        print(n)
+        people_create_sinks(int(request.POST['sinknum']),int(request.POST['n']),int(request.POST['R']),int(request.POST['nodenum']))
+        f=open("static/json/arg2.json","w")
+        print(sinkGroup)
+        json.dump(sinkGroup,f)
+    else:
+        ctx['rlt']="no"
+        return render(request,"func2.html",ctx)
+    findTheShortdistance()
+    print(sinkGroup)
+    p=getconnect(int(request.POST['R']))/getareas(int(request.POST['R']))
+    print(getconnect(int(request.POST['R'])))
+    ctx['rlt']="p="+str(p)
+    return render(request,"func2.html",ctx)
 

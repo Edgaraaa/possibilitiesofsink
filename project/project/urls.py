@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from projectapp.views import create_form,create_sink_node_group_random,create_sink_node_by_people
-from projectapp.views import create_form2
+from django.conf.urls import url
+from projectapp.views import random_create_sinks_nodes,index1,index2,people_create_sinks_nodes
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('create_form',create_form),
-    path('create',create_sink_node_group_random),
-    path('create_form2',create_form2),
-    path('create2',create_sink_node_by_people),
+    path('index1/',index1),
+    path('index2/',index2),
+    url(r'^create1$',random_create_sinks_nodes),
+    url(r'^create2$',people_create_sinks_nodes),
 ]
