@@ -13,6 +13,7 @@ nodeGroup={}
 sinkGroup={}
 nodeNum=0
 sinkNum=0
+exchangeNum=0
 def create_node(nodename,beginx,beginy,width,sinkname):
     node={}
     global nodeNum
@@ -62,9 +63,11 @@ def reset():
     global sinkGroup
     global nodeNum
     global sinkNum
+    global sinkNum
     nodeGroup={}
     sinkGroup={}
     nodeNum=0
+    sinkNum=0
     sinkNum=0
 
 def getdistance(ax,ay,bx,by):
@@ -121,13 +124,33 @@ def getareas(R):
             a+=1
     return a
 
+def update_exchange(exchangex):
+    global sinkGroup
+    global nodeGroup
+    nodenum=0
+    k=0
+    for i in nodeGroup:
+        nodenum+=1
+    for i in sinkGroup:
+        for j in nodeGroup:
+            while(k<exchangeNum):
+                noden=random.randint(0,nodenum)
+                node=nodeGroup["node"+str(noden)]
+                print(node)
+                if(node['cluster']!=i):
+                    sinkGroup[i]['nodegroup'].update({"nodeE"+str(k):node})
+                    k+=1
+        k=0
+
+
 
 def index1(request):
     return render_to_response("func1.html")
 
 def random_create_sinks_nodes(request):
+    global exchangeNum
     ctx={}
-    if request.POST['sinknum']!="" and request.POST['beginx']!="" and request.POST['beginy']!="" and request.POST['width']!="" and request.POST['R']!="" and request.POST['nodenum']!="":
+    if request.POST['sinknum']!="" and request.POST['beginx']!="" and request.POST['beginy']!="" and request.POST['width']!="" and request.POST['R']!="" and request.POST['nodenum']!="" and request.POST['exchangenum']!="":
         random_create_sinks(int(request.POST['sinknum']) , int(request.POST['beginx']) , int(request.POST['beginy']) , int(request.POST['width']) , int(request.POST['R']) , int(request.POST['nodenum']))
         f=open("static/json/arg.json","w")
         json.dump(sinkGroup,f)
@@ -135,8 +158,11 @@ def random_create_sinks_nodes(request):
         ctx['rlt']="no"
         return render(request,"func1.html",ctx)
     findTheShortdistance()
+    exchangeNum=int(request.POST['exchangenum'])
+    update_exchange(exchangeNum)
     p=getconnect(int(request.POST['R']))/getareas(int(request.POST['R']))
-    print(p)
+    files=open("static/txt/record1.txt","a+")
+    files.writelines(str(p)+'\n')
     ctx['rlt']="p="+str(p)
     return render(request,"func1.html",ctx)
 
@@ -176,7 +202,8 @@ def people_create_sinks_nodes(request):
     findTheShortdistance()
     print(sinkGroup)
     p=getconnect(int(request.POST['R']))/getareas(int(request.POST['R']))
-    print(getconnect(int(request.POST['R'])))
+    files=open("static/txt/record2.txt","a+")
+    files.writelines(str(p)+'\n')
     ctx['rlt']="p="+str(p)
     return render(request,"func2.html",ctx)
 
