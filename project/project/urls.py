@@ -17,11 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 from projectapp.views import random_create_sinks_nodes,index1,index2,people_create_sinks_nodes
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('index1/',index1),
-    path('index2/',index2),
     url(r'^create1$',random_create_sinks_nodes),
+    path('index2/',index2),
     url(r'^create2$',people_create_sinks_nodes),
 ]
